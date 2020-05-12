@@ -24,11 +24,8 @@ public class MainController extends GuiController {
     @FXML private ExtendedLineChart<Double, Double> lineChart;
 
     private Function function;
-    private boolean functionSteam;
-
     private double start;
     private double end;
-
     private int steps;
 
     private final XYChart.Series<Double, Double> functionSeries =
@@ -283,15 +280,8 @@ public class MainController extends GuiController {
         end = getB();
         steps = getSteps();
 
-        if (function.checkSyntax()) {
-            for (double i = start; i <= end; i++) {
-                functionSteam = function.calculate(i) == function.calculate(-i);
-                if (!functionSteam)
-                    break;
-            }
-
+        if (function.checkSyntax())
             fillFunctionSeries(start, end);
-        }
     }
 
     public int getSteps() {
