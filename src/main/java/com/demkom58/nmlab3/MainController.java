@@ -8,43 +8,30 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
-import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import org.mariuszgromada.math.mxparser.Expression;
 import org.mariuszgromada.math.mxparser.Function;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.LongStream;
 
 public class MainController extends GuiController {
-    @FXML
-    private TextField functionInput;
-    @FXML
-    private TextField fromAInput;
-    @FXML
-    private TextField toBInput;
-    @FXML
-    private TextField stepsInput;
-    @FXML
-    private ExtendedLineChart<Double, Double> lineChart;
+    @FXML private TextField functionInput;
+    @FXML private TextField fromAInput;
+    @FXML private TextField toBInput;
+    @FXML private TextField stepsInput;
+    @FXML private ExtendedLineChart<Double, Double> lineChart;
 
     private Function function;
     private boolean functionSteam;
 
-    private Expression expression;
     private double start;
     private double end;
 
     private int steps;
 
-    private XYChart.Series<Double, Double> functionSeries =
+    private final XYChart.Series<Double, Double> functionSeries =
             new XYChart.Series<>("Функція", FXCollections.observableArrayList());
 
     @Override
@@ -63,15 +50,20 @@ public class MainController extends GuiController {
             return;
         }
 
-        double stepSize = (end - start) / steps, sum = 0, value;
-        double curX = start,
-                prevX; // for visualization
+        var stepSize = (end - start) / steps;
+        var sum = 0D;
+        var value = 0D;
+
+        var curX = start;
+        var prevX = 0D; // visualization
 
         for (int step = 0; step <= steps - 1; step++) {
-            prevX = curX;
-            curX = start + step * stepSize;
+            prevX = curX; // visualization
 
+            curX = start + step * stepSize;
             sum += value = function.calculate(curX);
+
+            // visualization
             addGraphRectangle(step + 1, prevX, value, prevX, 0, curX, value, curX, 0);
         }
 
@@ -88,18 +80,25 @@ public class MainController extends GuiController {
             return;
         }
 
-        double stepSize = (end - start) / steps, sum = 0;
-        double curX = start,
-                prevX, // for visualization
-                curValue = Double.MIN_VALUE,
-                preValue; // for visualization
+        var stepSize = (end - start) / steps;
+        var sum = 0D;
+
+        var curX = start;
+        var prevX = 0D; // visualization
+
+        var curValue = Double.MIN_VALUE;
+        var preValue = 0D; // visualization
 
         for (int step = 1; step <= steps - 1; step++) {
+            // visualization
             prevX = curX;
-            curX = start + step * stepSize;
-
             preValue = curValue;
+
+            // calc
+            curX = start + step * stepSize;
             sum += curValue = function.calculate(curX);
+
+            // visualization
             if (preValue == Double.MIN_VALUE)
                 preValue = curValue;
 
@@ -108,8 +107,8 @@ public class MainController extends GuiController {
 
         var startAndEnd = function.calculate(start) + function.calculate(end);
         sum = stepSize / 2 * (startAndEnd + 2 * sum);
-        showResult("Трапецій", sum, steps);
 
+        showResult("Трапецій", sum, steps);
     }
 
     @FXML
@@ -121,22 +120,28 @@ public class MainController extends GuiController {
             return;
         }
 
-        double stepSize = (end - start) / steps,
-                sum = 0,
-                sum1 = 0,
-                sum2 = 0,
-                x = start, prevX;
+        var stepSize = (end - start) / steps;
+        var sum = 0D;
+        var sum1 = 0D;
+        var sum2 = 0D;
+        var x = start;
+        var prevX = 0D;
 
-        double value = 0, prevValue; // visualization
+        // visualization variables block
+        var value = 0D;
+        var prevValue = 0D;
 
         for (int step = 1; step <= steps - 1; step++) {
+            // visualization
             prevX = x;
-            x = start + step * stepSize;
-
             prevValue = value;
+
+            // calc
+            x = start + step * stepSize;
             if (step % 2 == 0) sum2 += value = function.calculate(x);
             else sum1 += value = function.calculate(x);
 
+            // visualization
             addGraphLine(step, prevX, prevValue, x, value);
         }
 
@@ -274,8 +279,6 @@ public class MainController extends GuiController {
             return;
 
         function = new Function(functionText);
-        expression = new Expression(functionText.substring("f(x)=".length()));
-
         start = getA();
         end = getB();
         steps = getSteps();
