@@ -24,6 +24,8 @@ public class MainController extends GuiController {
     @FXML private ExtendedLineChart<Double, Double> lineChart;
 
     private Function function;
+    private Expression expression;
+
     private double start;
     private double end;
     private int steps;
@@ -65,7 +67,12 @@ public class MainController extends GuiController {
         }
 
         sum *= stepSize;
-        showResult("Прямокутників", sum, steps);
+        showResult(
+                "Прямокутників",
+                "Результат: " + sum
+                        + "\nКроків: " + steps
+                        + "\nПохибка: " + (calculateIntegral() - sum)
+        );
     }
 
     @FXML
@@ -105,7 +112,11 @@ public class MainController extends GuiController {
         var startAndEnd = function.calculate(start) + function.calculate(end);
         sum = stepSize / 2 * (startAndEnd + 2 * sum);
 
-        showResult("Трапецій", sum, steps);
+        showResult("Трапецій",
+                "Результат: " + sum
+                        + "\nКроків: " + steps
+                        + "\nПохибка: " + (calculateIntegral() - sum)
+        );
     }
 
     @FXML
@@ -144,7 +155,12 @@ public class MainController extends GuiController {
 
         var startAndEnd = function.calculate(start) + function.calculate(end);
         sum = stepSize / 3 * (startAndEnd + 4 * sum1 + 2 * sum2);
-        showResult("Симпсона", sum, steps);
+        showResult(
+                "Симпсона",
+                "Результат: " + sum
+                        + "\nКроків: " + steps
+                        + "\nПохибка: " + (calculateIntegral() - sum)
+        );
     }
 
     @FXML
@@ -165,7 +181,11 @@ public class MainController extends GuiController {
         for (int step = 0; step < steps - 1; step++)
             sum += function.calculate(rands[step]) * stepSize;
 
-        showResult("Монте-Карло", sum, steps);
+        showResult("Монте-Карло",
+                "Результат: " + sum
+                        + "\nКроків: " + steps
+                        + "\nПохибка: " + (calculateIntegral() - sum)
+        );
     }
 
     private void addGraphLine(int step, double x1, double y1, double x2, double y2) {
@@ -213,11 +233,8 @@ public class MainController extends GuiController {
         read();
     }
 
-    private void showResult(String method, double result, int steps) {
-        AlertUtil.showInfoMessage(
-                "Метод " + method,
-                "Результат: " + result +
-                        "\nКроків: " + steps);
+    private void showResult(String method, String message) {
+        AlertUtil.showInfoMessage("Метод " + method, message);
         read();
     }
 
@@ -275,13 +292,25 @@ public class MainController extends GuiController {
         if (!functionText.isEmpty() && !functionText.startsWith("f(x)="))
             return;
 
+        expression = new Expression(functionText.substring("f(x)=".length()));
         function = new Function(functionText);
+
         start = getA();
         end = getB();
         steps = getSteps();
 
         if (function.checkSyntax())
             fillFunctionSeries(start, end);
+    }
+
+    private double calculateIntegral() {
+        final Expression ex = new Expression(
+                "int(" +
+                        expression.getExpressionString() + ", " + "x, " + getA() + ", " + getB()
+                        + ")"
+        );
+
+        return ex.calculate();
     }
 
     public int getSteps() {
